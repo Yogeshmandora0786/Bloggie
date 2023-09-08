@@ -1,0 +1,103 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> signinmanager
+@inject UserManager<IdentityUser> usermanager
+
+@model Bloggie.Web.Models.ViewModels.BlogDetailsViewModels
+
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-6">
+
+            @if (Model != null)
+            {
+                <h1 class="mb-3">@Model.Headding</h1>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-secondary">@Model.Author</span>
+                    <span class="text-secondary">@Model.PublishedDate.ToShortDateString()</span>
+                </div>
+
+                <div class="mb-3">
+                    @if (signinmanager.IsSignedIn(User))
+                    {
+                        <a id="btnLike" style="cursor: pointer;">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                        </a>
+                    }
+
+                    <span>@Model.TotalLikes</span> Likes
+                </div>
+
+                <div class="mb-3 d-flex">
+                    @foreach (var tag in Model.Tags)
+                    {
+                        <span class="badge bg-secondary me-1">@tag.Name</span>
+                    }
+                </div>
+
+
+                <img src="@Model.FeaturedImageUrl" class="d-block img-fluid mb-3" />
+
+                <div class="mb-3 blog-details-content">
+                    @Html.Raw(Model.Content)
+
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Comments</h5>
+
+                        @if (signinmanager.IsSignedIn(User))
+                        {
+                            <form method="post">
+                                <div class="mb-3">
+                                    <label class="form-label">Comment Description</label>
+                                    <input type="text" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <button type="submit" class="btn btn-dark">Submit</button>
+                                </div>
+                            </form>
+                        }
+                    </div>
+                    <div class="card-body">
+
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p> Blog Post Not Found!</p>
+            }
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script>
+        const btnLikeElement = document.getElementById('btnLike');
+
+        async function addLikeforblog() {
+            fetch('/api/BlogPostLike/Add', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                    'Accpect': '*/*'
+                },
+                body: JSON.stringify({
+                    BlogPostId: '@Model.Id',
+                    UserId = '@usermanager.GetUserId(User)',
+                })
+            }).then(console.log('Request finished'));
+        }
+
+        btnLikeElement.addEventListener('click', addLikeforblog);
+    </script>
+}
